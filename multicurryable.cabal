@@ -1,5 +1,5 @@
 cabal-version:      3.4
-name:               bunchable
+name:               multicurryable
 version:            0.1.0.0
 -- synopsis:
 -- description:
@@ -18,7 +18,7 @@ common warnings
 
 library
     import:           warnings
-    exposed-modules:  Bunchable
+    exposed-modules:  Multicurryable
     -- other-modules:
     -- other-extensions:
     build-depends:    
@@ -27,7 +27,7 @@ library
     hs-source-dirs:   lib
     default-language: GHC2021
 
-test-suite bunchable-test
+test-suite multicurryable-test
     import:           warnings
     default-language: GHC2021
     -- other-modules:
@@ -37,4 +37,4 @@ test-suite bunchable-test
     main-is:          Main.hs
     build-depends:
         base ^>=4.16.3.0,
-        bunchable
+        multicurryable
