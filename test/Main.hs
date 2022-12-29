@@ -34,5 +34,17 @@ fun2 = multicurry @(->) @_ @_ ufun2
 fun2b = multicurry @(->) @_ @_ ufun2b
 
 
+type Eith0 = Int
+type Eith1 = Either Bool Int
+type Eith2 = Either Char (Either Bool Int)
+
+ueith0 = multiuncurry @Either @_ @_ @Eith0 5
+ueith1 = multiuncurry @Either @_ @_ @Eith1 $ Right 5
+ueith2 = multiuncurry @Either @_ @_ @Eith2 $ Right (Right 5)
+
+eith0 = multicurry @Either @_ @_ ueith0
+eith1 = multicurry @Either @_ @_ ueith1
+eith2 = multicurry @Either @_ @_ ueith2
+
 main :: IO ()
 main = putStrLn "Test suite not yet implemented."
