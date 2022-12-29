@@ -18,6 +18,7 @@ type Fun1b = Bool -> IO Int
 type Fun2 = Char -> Bool -> Int
 type Fun2b = Char -> Bool -> IO Int
 
+-- Signatures omitted to check type inference
 ufun0 = multiuncurry @(->) @_ @_ @Fun0 5
 ufun0b = multiuncurry @(->) @_ @_ @Fun0b (pure 5)
 ufun1 = multiuncurry @(->) @_ @_ @Fun1 \_ -> 5
@@ -25,12 +26,12 @@ ufun1b = multiuncurry @(->) @_ @_ @Fun1b \_ -> pure 5
 ufun2 = multiuncurry @(->) @_ @_ @Fun2 \_ _ -> 5
 ufun2b = multiuncurry @(->) @_ @_ @Fun2b \_ _ -> pure 5
 
-fun0 = multicurry @(->) @_ @_ @Fun0 ufun0 
-fun0b = multiuncurry @(->) @_ @_ @Fun0b ufun0b
-fun1 = multiuncurry @(->) @_ @_ @Fun1 ufun1 
-fun1b = multiuncurry @(->) @_ @_ @Fun1b ufun1b
-fun2 = multiuncurry @(->) @_ @_ @Fun2 ufun2
-fun2b = multiuncurry @(->) @_ @_ @Fun2b ufun2b
+fun0 = multicurry @(->) @_ @_ ufun0 
+fun0b = multicurry @(->) @_ @_ ufun0b
+fun1 = multicurry @(->) @_ @_ ufun1 
+fun1b = multicurry @(->) @_ @_ ufun1b
+fun2 = multicurry @(->) @_ @_ ufun2
+fun2b = multicurry @(->) @_ @_ ufun2b
 
 
 main :: IO ()
