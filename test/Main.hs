@@ -10,6 +10,7 @@ module Main (main) where
 import Multicurryable
 import Data.SOP.NP
 import Data.SOP.NS
+import Data.Functor.Identity
 
 type Fun0 = Int
 type Fun0b = IO Int

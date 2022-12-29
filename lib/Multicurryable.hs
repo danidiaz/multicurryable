@@ -6,7 +6,10 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Multicurryable (Multicurryable (..)) where
+module Multicurryable (
+    -- * Multi-argument currying/uncurrying.
+    Multicurryable (..)
+  ) where
 
 import Data.Functor.Identity
 import Data.Kind
@@ -20,9 +23,9 @@ class
       f curried -> items,
       f curried -> a
   where
-  type UncurriedCollection f :: [Type] -> Type
-  multiuncurry :: curried -> f (UncurriedCollection f items) a
-  multicurry :: f (UncurriedCollection f items) a -> curried
+  type UncurriedArgs f :: [Type] -> Type
+  multiuncurry :: curried -> f (UncurriedArgs f items) a
+  multicurry :: f (UncurriedArgs f items) a -> curried
 
 -- Instance for (->)
 
@@ -30,11 +33,14 @@ type family IsFunction f :: Bool where
   IsFunction (_ -> _) = 'True
   IsFunction _ = 'False
 
+-- | The instance for functions provides conventional currying/uncurrying, only
+-- that it works for multiple arguments, and the uncurried arguments are stored
+-- in a 'NP' product instead of a tuple.
 instance
   MulticurryableF (IsFunction curried) items a curried =>
   Multicurryable (->) items a curried
   where
-  type UncurriedCollection (->) = NP Identity
+  type UncurriedArgs (->) = NP Identity
   multiuncurry = multiuncurryF @(IsFunction curried)
   multicurry = multicurryF @(IsFunction curried)
 
@@ -66,11 +72,15 @@ type family IsEither f :: Bool where
   IsEither (Either _ _) = 'True
   IsEither _ = 'False
 
+
+-- | The instance for 'Either' takes a sequence nested 'Either's, separates the
+-- errors from the success value at the right tip, and stores any occurring
+-- errors in a 'NS' sum.
 instance
   MulticurryableE (IsEither curried) items a curried =>
   Multicurryable Either items a curried
   where
-  type UncurriedCollection Either = NS Identity
+  type UncurriedArgs Either = NS Identity
   multiuncurry = multiuncurryE @(IsEither curried)
   multicurry = multicurryE @(IsEither curried)
 
