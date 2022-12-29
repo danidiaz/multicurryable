@@ -13,7 +13,7 @@ import Data.SOP.NP
 import Data.SOP.NS
 
 type Multicurryable :: (Type -> Type -> Type) -> [Type] -> Type -> Type -> Constraint
-class Multicurryable f items a curried | f items a -> curried where
+class Multicurryable f items a curried | f items a -> curried, f curried -> items, f curried -> a where
   type UncurriedCollection f :: [Type] -> Type
   multiuncurry :: curried -> f (UncurriedCollection f items) a
   multicurry :: f (UncurriedCollection f items) a -> curried
@@ -32,7 +32,7 @@ instance
 
 class MulticurryableF (b :: Bool) items a curried 
   -- | b items a -> curried, b curried -> items, b curried -> a where
-   | items a -> curried
+   | items a -> curried, curried b -> items, curried b -> a
     where
   multiuncurryF :: curried -> NP Identity items -> a
   multicurryF :: (NP Identity items -> a) -> curried
