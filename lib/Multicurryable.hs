@@ -8,11 +8,15 @@
 
 module Multicurryable (
     -- * Multi-argument currying/uncurrying.
-    Multicurryable (..)
+    Multicurryable (..),
+    -- * sop-core re-exports
+    NP (..),
+    NS (..),
+    I (..),
   ) where
 
-import Data.Functor.Identity
 import Data.Kind
+import Data.SOP
 import Data.SOP.NP
 import Data.SOP.NS
 
@@ -39,7 +43,7 @@ instance
   MulticurryableF (IsFunction curried) items a curried =>
   Multicurryable (->) items a curried
   where
-  type UncurriedArgs (->) = NP Identity
+  type UncurriedArgs (->) = NP I
   multiuncurry = multiuncurryF @(IsFunction curried)
   multicurry = multicurryF @(IsFunction curried)
 
@@ -48,8 +52,8 @@ class
     | items a -> curried,
       b curried -> items a 
   where
-  multiuncurryF :: curried -> NP Identity items -> a
-  multicurryF :: (NP Identity items -> a) -> curried
+  multiuncurryF :: curried -> NP I items -> a
+  multicurryF :: (NP I items -> a) -> curried
 
 instance MulticurryableF 'False '[] a a where
   multiuncurryF a Nil = a
@@ -59,10 +63,10 @@ instance
   MulticurryableF (IsFunction curried) rest tip curried =>
   MulticurryableF 'True (i ': rest) tip (i -> curried)
   where
-  multiuncurryF f (Identity x :* rest) =
+  multiuncurryF f (I x :* rest) =
     multiuncurryF @(IsFunction curried) @rest @tip @curried (f x) rest
   multicurryF f i =
-    multicurryF @(IsFunction curried) @rest @tip @curried $ \rest -> f (Identity i :* rest)
+    multicurryF @(IsFunction curried) @rest @tip @curried $ \rest -> f (I i :* rest)
 
 -- Instance for Either
 
@@ -78,7 +82,7 @@ instance
   MulticurryableE (IsEither curried) items a curried =>
   Multicurryable Either items a curried
   where
-  type UncurriedArgs Either = NS Identity
+  type UncurriedArgs Either = NS I
   multiuncurry = multiuncurryE @(IsEither curried)
   multicurry = multicurryE @(IsEither curried)
 
@@ -87,8 +91,8 @@ class
     | items a -> curried,
       b curried -> items a
   where
-  multiuncurryE :: curried -> Either (NS Identity items) a
-  multicurryE :: Either (NS Identity items) a -> curried
+  multiuncurryE :: curried -> Either (NS I items) a
+  multicurryE :: Either (NS I items) a -> curried
 
 instance MulticurryableE 'False '[] a a where
   multiuncurryE = Right
@@ -101,14 +105,14 @@ instance
   MulticurryableE 'True (i ': rest) tip (Either i curried)
   where
   multiuncurryE = \case
-    Left x -> Left (Z (Identity x))
+    Left x -> Left (Z (I x))
     Right rest ->
       case multiuncurryE @(IsEither curried) @rest @tip @curried rest of
         Left ns -> Left (S ns)
         Right x -> Right x
   multicurryE = \case
     Left rest -> case rest of
-      Z (Identity x) -> Left x
+      Z (I x) -> Left x
       S rest' -> Right $ multicurryE @(IsEither curried) @_ @tip @curried (Left rest')
     Right tip -> Right $ multicurryE @(IsEither curried) @_ @tip @curried (Right tip)
 
