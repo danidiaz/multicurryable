@@ -20,8 +20,7 @@ type Multicurryable :: (Type -> Type -> Type) -> [Type] -> Type -> Type -> Const
 class
   Multicurryable f items a curried
     | f items a -> curried,
-      f curried -> items,
-      f curried -> a
+      f curried -> items a
   where
   type UncurriedArgs f :: [Type] -> Type
   multiuncurry :: curried -> f (UncurriedArgs f items) a
@@ -47,8 +46,7 @@ instance
 class
   MulticurryableF (b :: Bool) items a curried
     | items a -> curried,
-      curried b -> items,
-      curried b -> a
+      b curried -> items a 
   where
   multiuncurryF :: curried -> NP Identity items -> a
   multicurryF :: (NP Identity items -> a) -> curried
@@ -87,8 +85,7 @@ instance
 class
   MulticurryableE (b :: Bool) items a curried
     | items a -> curried,
-      curried b -> items,
-      curried b -> a
+      b curried -> items a
   where
   multiuncurryE :: curried -> Either (NS Identity items) a
   multicurryE :: Either (NS Identity items) a -> curried
