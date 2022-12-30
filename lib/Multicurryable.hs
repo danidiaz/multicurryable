@@ -114,3 +114,12 @@ instance
       Z (Identity x) -> Left x
       S rest' -> Right $ multicurryE @(IsEither curried) @_ @tip @curried (Left rest')
     Right tip -> Right $ multicurryE @(IsEither curried) @_ @tip @curried (Right tip)
+
+-- $setup
+-- >>> :set -XAllowAmbiguousTypes
+-- >>> :set -XDataKinds 
+-- >>> :set -XFunctionalDependencies 
+-- >>> :set -XLambdaCase 
+-- >>> :set -XTypeFamilies
+-- >>> :set -XTypeOperators
+-- >>> :set -XUndecidableInstances 

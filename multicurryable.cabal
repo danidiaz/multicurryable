@@ -39,3 +39,15 @@ test-suite multicurryable-test
         base ^>=4.16.3.0,
         sop-core ^>= 0.5.0.2,
         multicurryable
+
+test-suite doctests
+  import:              warnings
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      doctest
+  main-is:             Main.hs
+  build-depends:       
+        base ^>=4.16.3.0,
+        sop-core ^>= 0.5.0.2,
+        doctest,
+        multicurryable,
+  default-language:    GHC2021
