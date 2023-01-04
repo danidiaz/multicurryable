@@ -53,7 +53,6 @@ test-suite doctests
   main-is:             doctests.hs
   build-depends:       
         base >= 4.16 && < 5,
-        sop-core ^>= 0.5.0.2,
-        doctest,
+        doctest ^>=  0.20.1,
         multicurryable,
   default-language:    GHC2021

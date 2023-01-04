@@ -9,6 +9,16 @@
 -- | While writing function decorators, we often need to store the arguments
 -- of the function in a n-ary product. @'multiuncurry' \@(<-)@ is useful for that.   
 --
+-- >>> :{
+-- type Fun0 = Int
+-- type Fun1 = Bool -> Int
+-- type Fun2 = Char -> Bool -> Int
+-- ufun0 = multiuncurry @(->) @_ @_ @Fun0 $ 5
+-- ufun1 = multiuncurry @(->) @_ @_ @Fun1 $ \_ -> 5
+-- ufun2 = multiuncurry @(->) @_ @_ @Fun2 $ \_ _ -> 5
+-- :}
+--
+--
 -- Less often, when processing the result of functions, we have a nested chain
 -- of 'Either's like @Either Err1 (Either Err2 (Either Err3 Success))@, and want to put all the errors in a top-level 'Left' branch,
 -- and the lone @Success@ value in a top-level 'Right' branch. @'multiuncurry' \@Either@ is useful for that.   
@@ -136,3 +146,4 @@ instance
 -- >>> :set -XTypeFamilies
 -- >>> :set -XTypeOperators
 -- >>> :set -XUndecidableInstances 
+-- >>> import Multicurryable
