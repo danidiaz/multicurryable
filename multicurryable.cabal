@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               multicurryable
-version:            0.1.0.0
+version:            0.1.0.1
 synopsis:           Uncurry functions with multiple arguments.
 description:        This library provides a version of "uncurry" which takes a
                     function of multiple arguments and stores the arguments into an n-ary product

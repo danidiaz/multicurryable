@@ -11,11 +11,17 @@
 --
 -- >>> :{
 -- type Fun0 = Int
+-- type UFun0 = NP I '[] -> Int
 -- type Fun1 = Bool -> Int
+-- type UFun1 = NP I '[Bool] -> Int
 -- type Fun2 = Char -> Bool -> Int
--- ufun0 = multiuncurry @(->) @_ @_ @Fun0 $ 5
--- ufun1 = multiuncurry @(->) @_ @_ @Fun1 $ \_ -> 5
--- ufun2 = multiuncurry @(->) @_ @_ @Fun2 $ \_ _ -> 5
+-- type UFun2 = NP I '[Char, Bool] -> Int
+-- ufun0 :: UFun0 = multiuncurry @(->) @_ @_ @Fun0 $ 5
+-- ufun1 :: UFun1 = multiuncurry @(->) @_ @_ @Fun1 $ \_ -> 5
+-- ufun2 :: UFun2 = multiuncurry @(->) @_ @_ @Fun2 $ \_ _ -> 5
+-- fun0 :: Fun0 = multicurry @(->) @_ @_ ufun0 
+-- fun1 :: Fun1 = multicurry @(->) @_ @_ ufun1 
+-- fun2 :: Fun2 = multicurry @(->) @_ @_ ufun2
 -- :}
 --
 --
@@ -23,6 +29,22 @@
 -- of 'Either's like @Either Err1 (Either Err2 (Either Err3 Success))@, and want to put all the errors in a top-level 'Left' branch,
 -- and the lone @Success@ value in a top-level 'Right' branch. @'multiuncurry' \@Either@ is useful for that.   
 -- 
+-- >>> :{
+-- type Eith0 = Int
+-- type Eith1 = Either Bool Int
+-- type Eith2 = Either Char (Either Bool Int)
+-- type UEith0 = Either (NS I '[]) Int
+-- type UEith1 = Either (NS I '[Bool]) Int
+-- type UEith2 = Either (NS I '[Char, Bool]) Int
+-- ueith0 :: UEith0 = multiuncurry @Either @_ @_ @Eith0 5
+-- ueith1 :: UEith1 = multiuncurry @Either @_ @_ @Eith1 $ Right 5
+-- ueith2 :: UEith2 = multiuncurry @Either @_ @_ @Eith2 $ Right (Right 5)
+-- eith0 :: Eith0 = multicurry @Either @_ @_ ueith0
+-- eith1 :: Eith1 = multicurry @Either @_ @_ ueith1
+-- eith2 :: Eith2 = multicurry @Either @_ @_ ueith2
+-- :}
+--
+--
 -- The 'Multicurryable' class will get terribly confused if it can't determine
 -- the rightmost type, because it can't be sure it's not another @(->)@, or
 -- another @Either@. So use it only with concrete rightmost types, not
@@ -39,8 +61,6 @@ module Multicurryable (
 
 import Data.Kind
 import Data.SOP
-import Data.SOP.NP
-import Data.SOP.NS
 
 type Multicurryable :: (Type -> Type -> Type) -> [Type] -> Type -> Type -> Constraint
 class
@@ -147,3 +167,4 @@ instance
 -- >>> :set -XTypeOperators
 -- >>> :set -XUndecidableInstances 
 -- >>> import Multicurryable
+-- >>> import Data.SOP

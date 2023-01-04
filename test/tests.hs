@@ -39,8 +39,11 @@ type Eith0 = Int
 type Eith1 = Either Bool Int
 type Eith2 = Either Char (Either Bool Int)
 
+ueith0 :: Either (NS I '[]) Int
 ueith0 = multiuncurry @Either @_ @_ @Eith0 5
+ueith1 :: Either (NS I '[Bool]) Int
 ueith1 = multiuncurry @Either @_ @_ @Eith1 $ Right 5
+ueith2 :: Either (NS I '[Char, Bool]) Int
 ueith2 = multiuncurry @Either @_ @_ @Eith2 $ Right (Right 5)
 
 eith0 = multicurry @Either @_ @_ ueith0
