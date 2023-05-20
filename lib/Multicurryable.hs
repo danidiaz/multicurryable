@@ -2,7 +2,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -53,6 +53,12 @@
 module Multicurryable (
     -- * Multi-argument currying/uncurrying.
     Multicurryable (..),
+    -- * Helpers for '(->)'
+    MulticurryableF,
+    IsFunction,
+    -- * Helpers for 'Either'
+    MulticurryableE,
+    IsEither,
     -- * sop-core re-exports
     NP (..),
     NS (..),
@@ -74,89 +80,102 @@ class
 
 -- Instance for (->)
 
-type family IsFunction f :: Bool where
-  IsFunction (_ -> _) = 'True
-  IsFunction _ = 'False
+type IsFunction :: Type -> Where
+type family IsFunction f :: Where where
+  IsFunction (_ -> _) = 'NotYetThere 
+  IsFunction _ = 'AtTheTip
 
+  
 -- | The instance for functions provides conventional currying/uncurrying, only
 -- that it works for multiple arguments, and the uncurried arguments are stored
 -- in a 'NP' product instead of a tuple.
 instance
-  MulticurryableF (IsFunction curried) items a curried =>
+  MulticurryableF items a curried (IsFunction curried)
+  =>
   Multicurryable (->) items a curried
   where
   type UncurriedArgs (->) = NP I
-  multiuncurry = multiuncurryF @(IsFunction curried)
-  multicurry = multicurryF @(IsFunction curried)
+  multiuncurry = multiuncurryF @_ @_ @_ @(IsFunction curried)
+  multicurry = multicurryF @_ @_ @_ @(IsFunction curried)
 
+type MulticurryableF :: [Type] -> Type -> Type -> Where -> Constraint
 class
-  MulticurryableF (b :: Bool) items a curried
-    | items a -> curried,
-      b curried -> items a 
+  MulticurryableF items a curried (decomp :: Where)
+    | items a -> curried decomp,
+      curried decomp -> items a 
   where
   multiuncurryF :: curried -> NP I items -> a
   multicurryF :: (NP I items -> a) -> curried
 
-instance MulticurryableF 'False '[] a a where
+instance MulticurryableF '[] a a 'AtTheTip where
   multiuncurryF a Nil = a
   multicurryF f = f Nil
 
 instance
-  MulticurryableF (IsFunction curried) rest tip curried =>
-  MulticurryableF 'True (i ': rest) tip (i -> curried)
+  MulticurryableF rest tip curried (IsFunction curried)
+  =>
+  MulticurryableF (i ': rest) tip (i -> curried) 'NotYetThere
   where
   multiuncurryF f (I x :* rest) =
-    multiuncurryF @(IsFunction curried) @rest @tip @curried (f x) rest
+    multiuncurryF @rest @tip @curried @(IsFunction curried) (f x) rest
   multicurryF f i =
-    multicurryF @(IsFunction curried) @rest @tip @curried $ \rest -> f (I i :* rest)
+    multicurryF @rest @tip @curried @(IsFunction curried) $ \rest -> f (I i :* rest)
 
 -- Instance for Either
 
-type family IsEither f :: Bool where
-  IsEither (Either _ _) = 'True
-  IsEither _ = 'False
+type IsEither :: Type -> Where
+type family IsEither f :: Where where
+  IsEither (Either _ _) = 'NotYetThere
+  IsEither _ = 'AtTheTip
 
 
 -- | The instance for 'Either' takes a sequence nested 'Either's, separates the
 -- errors from the success value at the right tip, and stores any occurring
 -- errors in a 'NS' sum.
 instance
-  MulticurryableE (IsEither curried) items a curried =>
+  MulticurryableE items a curried (IsEither curried) =>
   Multicurryable Either items a curried
   where
   type UncurriedArgs Either = NS I
-  multiuncurry = multiuncurryE @(IsEither curried)
-  multicurry = multicurryE @(IsEither curried)
+  multiuncurry = multiuncurryE @_ @_ @_ @(IsEither curried)
+  multicurry = multicurryE @_ @_ @_ @(IsEither curried)
 
+
+type MulticurryableE :: [Type] -> Type -> Type -> Where -> Constraint
 class
-  MulticurryableE (b :: Bool) items a curried
-    | items a -> curried,
-      b curried -> items a
+  MulticurryableE items a curried (decomp :: Where)
+    | items a -> curried decomp,
+      curried decomp -> items a
   where
   multiuncurryE :: curried -> Either (NS I items) a
   multicurryE :: Either (NS I items) a -> curried
 
-instance MulticurryableE 'False '[] a a where
+instance MulticurryableE '[] a a 'AtTheTip where
   multiuncurryE = Right
   multicurryE = \case
     Left impossible -> case impossible of {}
     Right a -> a
 
 instance
-  MulticurryableE (IsEither curried) rest tip curried =>
-  MulticurryableE 'True (i ': rest) tip (Either i curried)
+  MulticurryableE  rest tip curried (IsEither curried) =>
+  MulticurryableE (i ': rest) tip (Either i curried) 'NotYetThere
   where
   multiuncurryE = \case
     Left x -> Left (Z (I x))
     Right rest ->
-      case multiuncurryE @(IsEither curried) @rest @tip @curried rest of
+      case multiuncurryE @rest @tip @curried @(IsEither curried) rest of
         Left ns -> Left (S ns)
         Right x -> Right x
   multicurryE = \case
     Left rest -> case rest of
       Z (I x) -> Left x
-      S rest' -> Right $ multicurryE @(IsEither curried) @_ @tip @curried (Left rest')
-    Right tip -> Right $ multicurryE @(IsEither curried) @_ @tip @curried (Right tip)
+      S rest' -> Right $ multicurryE @_ @tip @curried @(IsEither curried) (Left rest')
+    Right tip -> Right $ multicurryE @_ @tip @curried @(IsEither curried) (Right tip)
+
+-- 
+data Where =
+        NotYetThere
+      | AtTheTip
 
 -- $setup
 -- >>> :set -XAllowAmbiguousTypes

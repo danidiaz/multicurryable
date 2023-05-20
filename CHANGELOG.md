@@ -1,5 +1,9 @@
 # Revision history for bunchable
 
+## 0.1.1.0
+
+* Expose MulticurryableF and MulticurryableE.
+
 ## 0.1.0.1
 
 * Doctests
