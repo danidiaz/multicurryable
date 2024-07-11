@@ -50,5 +50,8 @@ eith0 = multicurry @Either @_ @_ ueith0
 eith1 = multicurry @Either @_ @_ ueith1
 eith2 = multicurry @Either @_ @_ ueith2
 
+fooCompare :: (Int, Bool) -> (Int,Bool) -> Ordering
+fooCompare = compare `multion` fst
+
 main :: IO ()
 main = putStrLn "Test suite not yet implemented."

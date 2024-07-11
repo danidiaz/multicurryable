@@ -56,6 +56,7 @@ module Multicurryable (
     -- * Helpers for '(->)'
     MulticurryableF,
     IsFunction,
+    multion,
     -- * Helpers for 'Either'
     MulticurryableE,
     IsEither,
@@ -67,6 +68,7 @@ module Multicurryable (
 
 import Data.Kind
 import Data.SOP
+import Data.SOP.NP
 
 type Multicurryable :: (Type -> Type -> Type) -> [Type] -> Type -> Type -> Constraint
 class
@@ -85,6 +87,24 @@ type family IsFunction f :: Where where
   IsFunction (_ -> _) = 'NotYetThere 
   IsFunction _ = 'AtTheTip
 
+class (a ~ a', b ~ b') => AB a b a' b'
+instance (a ~ a', b ~ b') => AB a b a' b'
+
+multion :: 
+  forall a b aitems bitems r acurried bcurried.
+  (All ((~) a) aitems,
+   Multicurryable (->) aitems r acurried,  
+   All ((~) b) bitems,
+   AllZip (AB a b) aitems bitems ,
+   Multicurryable (->) bitems r bcurried) => 
+  bcurried ->
+  (a -> b) ->
+  acurried
+multion acurried f = 
+  let buncurried = multiuncurry @(->) @bitems @r acurried
+      transform = trans_NP (Proxy @(AB a b)) (mapII f)
+      auncurried = buncurried . transform
+   in multicurry @(->) @aitems @r auncurried
   
 -- | The instance for functions provides conventional currying/uncurrying, only
 -- that it works for multiple arguments, and the uncurried arguments are stored
