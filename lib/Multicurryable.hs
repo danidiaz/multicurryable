@@ -91,17 +91,16 @@ class (a ~ a', b ~ b') => AB a b a' b'
 instance (a ~ a', b ~ b') => AB a b a' b'
 
 multion :: 
-  forall a b aitems bitems r acurried bcurried.
-  (All ((~) a) aitems,
-   Multicurryable (->) aitems r acurried,  
-   All ((~) b) bitems,
+  forall a b r aitems bitems acurried bcurried.
+  (
    AllZip (AB a b) aitems bitems ,
+   Multicurryable (->) aitems r acurried,  
    Multicurryable (->) bitems r bcurried) => 
   bcurried ->
   (a -> b) ->
   acurried
-multion acurried f = 
-  let buncurried = multiuncurry @(->) @bitems @r acurried
+multion bcurried f = 
+  let buncurried = multiuncurry @(->) @bitems @r bcurried
       transform = trans_NP (Proxy @(AB a b)) (mapII f)
       auncurried = buncurried . transform
    in multicurry @(->) @aitems @r auncurried

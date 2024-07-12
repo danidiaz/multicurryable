@@ -50,6 +50,12 @@ eith0 = multicurry @Either @_ @_ ueith0
 eith1 = multicurry @Either @_ @_ ueith1
 eith2 = multicurry @Either @_ @_ ueith2
 
+compare3 :: Int -> Int -> Int -> Ordering
+compare3 = undefined
+
+fooCompare3 :: (Int, Bool) -> (Int,Bool) -> (Int,Bool) -> Ordering
+fooCompare3 = compare3 `multion` fst
+
 fooCompare :: (Int, Bool) -> (Int,Bool) -> Ordering
 fooCompare = compare `multion` fst
 
