@@ -87,15 +87,14 @@ type family IsFunction f :: Where where
   IsFunction (_ -> _) = 'NotYetThere 
   IsFunction _ = 'AtTheTip
 
-class (a ~ a', b ~ b') => AB a b a' b'
-instance (a ~ a', b ~ b') => AB a b a' b'
-
+-- >>> :type compare `multion` fst
+-- compare `multion` fst :: Ord a => (a, b) -> (a, b) -> Ordering
 multion :: 
   forall a b r aitems bitems acurried bcurried.
   (
-   AllZip (AB a b) aitems bitems ,
    Multicurryable (->) aitems r acurried,  
-   Multicurryable (->) bitems r bcurried) => 
+   Multicurryable (->) bitems r bcurried,
+   AllZip (AB a b) aitems bitems) => 
   bcurried ->
   (a -> b) ->
   acurried
@@ -104,6 +103,11 @@ multion bcurried f =
       transform = trans_NP (Proxy @(AB a b)) (mapII f)
       auncurried = buncurried . transform
    in multicurry @(->) @aitems @r auncurried
+
+-- The class synonym trick.
+class (a ~ a', b ~ b') => AB a b a' b'
+instance (a ~ a', b ~ b') => AB a b a' b'
+
   
 -- | The instance for functions provides conventional currying/uncurrying, only
 -- that it works for multiple arguments, and the uncurried arguments are stored
@@ -206,3 +210,7 @@ data Where =
 -- >>> :set -XUndecidableInstances 
 -- >>> import Multicurryable
 -- >>> import Data.SOP
+-- panic! (the 'impossible' happened)
+--   GHC version 9.4.8:
+-- 	setSessionDynFlags can only be used with a single home unit
+-- Please report this as a GHC bug:  https://www.haskell.org/ghc/reportabug
